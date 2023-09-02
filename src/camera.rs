@@ -8,6 +8,8 @@ use crate::{
     vec3::{Point3, Vec3},
 };
 
+use rayon::prelude::*;
+
 #[derive(Debug, Default)]
 pub struct Camera {
     // Ratio of image width over height
@@ -77,11 +79,13 @@ impl Camera {
         for j in 0..self.image_height {
             eprint!("\rScanlines remaining: {} ", self.image_height - j);
             for i in 0..self.image_width {
-                let mut pixel_color = Color::new(0., 0., 0.);
-                for _ in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(r, self.max_depth, world)
-                }
+                let pixel_color = (0..self.samples_per_pixel)
+                    .into_par_iter()
+                    .map(|_| {
+                        let r = self.get_ray(i, j);
+                        Self::ray_color(r, self.max_depth, world)
+                    })
+                    .reduce(|| Color::new(0., 0., 0.), |a, b| a + b);
                 write_color(pixel_color, self.samples_per_pixel)
             }
         }
