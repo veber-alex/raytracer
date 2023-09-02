@@ -1,12 +1,34 @@
 use crate::{
+    hittable_list::HittableList,
     interval::Interval,
     material::AnyMaterial,
     ray::Ray,
+    sphere::Sphere,
     vec3::{Point3, Vec3},
 };
 
 pub trait Hittable {
     fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+
+    fn into_any_hittable(self) -> AnyHittable;
+}
+
+pub enum AnyHittable {
+    Sphere(Sphere),
+    List(HittableList),
+}
+
+impl Hittable for AnyHittable {
+    fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
+        match self {
+            AnyHittable::Sphere(h) => h.hit(r, ray_t, rec),
+            AnyHittable::List(h) => h.hit(r, ray_t, rec),
+        }
+    }
+
+    fn into_any_hittable(self) -> AnyHittable {
+        self
+    }
 }
 
 #[derive(Clone, Copy)]

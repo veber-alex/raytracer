@@ -1,14 +1,12 @@
-use std::rc::Rc;
-
 use crate::{
-    hittable::{HitRecord, Hittable},
+    hittable::{AnyHittable, HitRecord, Hittable},
     interval::Interval,
     ray::Ray,
 };
 
 #[derive(Default)]
 pub struct HittableList {
-    objects: Vec<Rc<dyn Hittable>>,
+    objects: Vec<AnyHittable>,
 }
 
 impl HittableList {
@@ -16,8 +14,8 @@ impl HittableList {
         Self::default()
     }
 
-    pub fn add(&mut self, object: Rc<dyn Hittable>) {
-        self.objects.push(object);
+    pub fn add(&mut self, object: impl Hittable) {
+        self.objects.push(object.into_any_hittable());
     }
 }
 
@@ -36,5 +34,9 @@ impl Hittable for HittableList {
         }
 
         hit_anything
+    }
+
+    fn into_any_hittable(self) -> AnyHittable {
+        AnyHittable::List(self)
     }
 }

@@ -1,28 +1,28 @@
 use crate::{
-    hittable::{HitRecord, Hittable},
+    hittable::{AnyHittable, HitRecord, Hittable},
     interval::Interval,
-    material::Material,
+    material::{AnyMaterial, Material},
     ray::Ray,
     vec3::Point3,
 };
 
-pub struct Sphere<T: Material> {
+pub struct Sphere {
     center: Point3,
     radius: f64,
-    mat: T,
+    mat: AnyMaterial,
 }
 
-impl<T: Material> Sphere<T> {
-    pub fn new(center: Point3, radius: f64, mat: T) -> Self {
+impl Sphere {
+    pub fn new(center: Point3, radius: f64, mat: impl Material) -> Self {
         Self {
             center,
             radius,
-            mat,
+            mat: mat.into_any_material(),
         }
     }
 }
 
-impl<T: Material + Copy> Hittable for Sphere<T> {
+impl Hittable for Sphere {
     fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
         let oc = r.origin() - self.center;
         let a = r.direction().length_squared();
@@ -48,8 +48,12 @@ impl<T: Material + Copy> Hittable for Sphere<T> {
         rec.p = r.at(rec.t);
         let outward_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, outward_normal);
-        rec.mat = self.mat.into_any_material();
+        rec.mat = self.mat;
 
         true
+    }
+
+    fn into_any_hittable(self) -> AnyHittable {
+        AnyHittable::Sphere(self)
     }
 }
