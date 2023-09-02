@@ -2,6 +2,7 @@ use crate::{
     color::{write_color, Color},
     hittable::{HitRecord, Hittable},
     interval::Interval,
+    material::Material,
     ray::Ray,
     rtweekend::{degrees_to_radians, random_double, INFINITY},
     vec3::{Point3, Vec3},

@@ -8,8 +8,40 @@ pub trait Material {
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool;
+
+    fn into_any_material(self) -> AnyMaterial;
 }
 
+#[derive(Clone, Copy)]
+pub enum AnyMaterial {
+    Lambertian(Lambertian),
+    Metal(Metal),
+    Dielectric(Dielectric),
+    None,
+}
+
+impl Material for AnyMaterial {
+    fn scatter(
+        &self,
+        r_in: Ray,
+        rec: &HitRecord,
+        attenuation: &mut Color,
+        scattered: &mut Ray,
+    ) -> bool {
+        match self {
+            AnyMaterial::Lambertian(m) => m.scatter(r_in, rec, attenuation, scattered),
+            AnyMaterial::Metal(m) => m.scatter(r_in, rec, attenuation, scattered),
+            AnyMaterial::Dielectric(m) => m.scatter(r_in, rec, attenuation, scattered),
+            AnyMaterial::None => panic!("placeholder material"),
+        }
+    }
+
+    fn into_any_material(self) -> AnyMaterial {
+        self
+    }
+}
+
+#[derive(Clone, Copy)]
 pub struct Lambertian {
     albedo: Color,
 }
@@ -39,8 +71,13 @@ impl Material for Lambertian {
         *attenuation = self.albedo;
         true
     }
+
+    fn into_any_material(self) -> AnyMaterial {
+        AnyMaterial::Lambertian(self)
+    }
 }
 
+#[derive(Clone, Copy)]
 pub struct Metal {
     albedo: Color,
     fuzz: f64,
@@ -68,14 +105,13 @@ impl Material for Metal {
         *attenuation = self.albedo;
         scattered.direction().dot(rec.normal) > 0.
     }
-}
 
-impl Material for () {
-    fn scatter(&self, _: Ray, _: &HitRecord, _: &mut Color, _: &mut Ray) -> bool {
-        panic!("placeholder")
+    fn into_any_material(self) -> AnyMaterial {
+        AnyMaterial::Metal(self)
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct Dielectric {
     // Index of Refraction
     ir: f64,
@@ -126,5 +162,9 @@ impl Material for Dielectric {
 
         *scattered = Ray::new(rec.p, direction);
         true
+    }
+
+    fn into_any_material(self) -> AnyMaterial {
+        AnyMaterial::Dielectric(self)
     }
 }

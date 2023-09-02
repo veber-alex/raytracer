@@ -21,7 +21,7 @@ mod vec3;
 fn main() {
     let mut world = HittableList::new();
 
-    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
     world.add(Rc::new(Sphere::new(
         Point3::new(0., -1000., 0.),
         1000.,
@@ -41,38 +41,38 @@ fn main() {
                 if choose_mat < 0.6 {
                     // diffuse
                     let albedo = Color::random() * Color::random();
-                    let sphere_material = Rc::new(Lambertian::new(albedo));
+                    let sphere_material = Lambertian::new(albedo);
                     world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
                 } else if choose_mat < 0.90 {
                     // metal
                     let albedo = Color::random_min_max(0.5, 1.);
                     let fuzz = random_double_min_max(0., 0.5);
-                    let sphere_material = Rc::new(Metal::new(albedo, fuzz));
+                    let sphere_material = Metal::new(albedo, fuzz);
                     world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
                 } else {
                     // glass
-                    let sphere_material = Rc::new(Dielectric::new(1.5));
+                    let sphere_material = Dielectric::new(1.5);
                     world.add(Rc::new(Sphere::new(center, 0.2, sphere_material)));
                 }
             }
         }
     }
 
-    let material1 = Rc::new(Dielectric::new(1.5));
+    let material1 = Dielectric::new(1.5);
     world.add(Rc::new(Sphere::new(
         Point3::new(0., 1., 0.),
         1.0,
         material1,
     )));
 
-    let material2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material2 = Lambertian::new(Color::new(0.4, 0.2, 0.1));
     world.add(Rc::new(Sphere::new(
         Point3::new(-4., 1., 0.),
         1.,
         material2,
     )));
 
-    let material3 = Rc::new(Metal::new(Color::new(0.5, 0.6, 0.5), 0.));
+    let material3 = Metal::new(Color::new(0.5, 0.6, 0.5), 0.);
     world.add(Rc::new(Sphere::new(
         Point3::new(4.0, 1., 0.),
         1.,

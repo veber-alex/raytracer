@@ -1,17 +1,19 @@
-use std::rc::Rc;
-
 use crate::{
     interval::Interval,
-    material::Material,
+    material::AnyMaterial,
     ray::Ray,
     vec3::{Point3, Vec3},
 };
 
-#[derive(Clone)]
+pub trait Hittable {
+    fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+}
+
+#[derive(Clone, Copy)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub mat: Rc<dyn Material>,
+    pub mat: AnyMaterial,
     pub t: f64,
     pub front_face: bool,
 }
@@ -21,7 +23,7 @@ impl HitRecord {
         Self {
             p: Point3::default(),
             normal: Vec3::default(),
-            mat: Rc::new(()),
+            mat: AnyMaterial::None,
             t: 0.,
             front_face: false,
         }
@@ -37,8 +39,4 @@ impl HitRecord {
             -outward_normal
         };
     }
-}
-
-pub trait Hittable {
-    fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
 }
