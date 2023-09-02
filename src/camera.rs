@@ -1,6 +1,7 @@
 use crate::{
     color::{write_color, Color},
-    hittable::{AnyHittable, HitRecord, Hittable},
+    hittable::{HitRecord, Hittable},
+    hittable_list::HittableList,
     interval::Interval,
     material::Material,
     ray::Ray,
@@ -71,7 +72,7 @@ impl Camera {
         }
     }
 
-    pub fn render(&mut self, world: &AnyHittable) {
+    pub fn render(&mut self, world: &HittableList) {
         self.initialize();
 
         println!("P3\n{} {}\n255", self.image_width, self.image_height);
@@ -165,7 +166,7 @@ impl Camera {
         (px * self.pixel_delta_u) + (py * self.pixel_delta_v)
     }
 
-    fn ray_color(r: Ray, depth: i32, world: &AnyHittable) -> Color {
+    fn ray_color(r: Ray, depth: i32, world: &HittableList) -> Color {
         // If we've exceeded the ray bounce limit, no more light is gathered.
         if depth <= 0 {
             return Color::new(0., 0., 0.);

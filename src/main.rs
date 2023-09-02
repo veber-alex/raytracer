@@ -1,7 +1,6 @@
 use crate::{hittable_list::HittableList, sphere::Sphere, vec3::Point3};
 use camera::Camera;
 use color::Color;
-use hittable::Hittable;
 use material::{Dielectric, Lambertian, Metal};
 use rtweekend::{random_double, random_double_min_max};
 use vec3::Vec3;
@@ -81,5 +80,5 @@ fn main() {
     cam.defocus_angle = 0.6;
     cam.focus_dist = 10.;
 
-    cam.render(&world.into_any_hittable());
+    cam.render(&world);
 }
