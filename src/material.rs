@@ -1,5 +1,8 @@
+use enum_dispatch::enum_dispatch;
+
 use crate::{color::Color, hittable::HitRecord, ray::Ray, rtweekend::random_double, vec3::Vec3};
 
+#[enum_dispatch]
 pub trait Material {
     fn scatter(
         &self,
@@ -8,40 +11,17 @@ pub trait Material {
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool;
-
-    fn into_any_material(self) -> AnyMaterial;
 }
 
 #[derive(Clone, Copy)]
+#[enum_dispatch(Material)]
 pub enum AnyMaterial {
-    Lambertian(Lambertian),
-    Metal(Metal),
-    Dielectric(Dielectric),
-    None,
+    Lambertian,
+    Metal,
+    Dielectric,
 }
 
-impl Material for AnyMaterial {
-    fn scatter(
-        &self,
-        r_in: Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool {
-        match self {
-            AnyMaterial::Lambertian(m) => m.scatter(r_in, rec, attenuation, scattered),
-            AnyMaterial::Metal(m) => m.scatter(r_in, rec, attenuation, scattered),
-            AnyMaterial::Dielectric(m) => m.scatter(r_in, rec, attenuation, scattered),
-            AnyMaterial::None => panic!("placeholder material"),
-        }
-    }
-
-    fn into_any_material(self) -> AnyMaterial {
-        self
-    }
-}
-
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct Lambertian {
     albedo: Color,
 }
@@ -70,10 +50,6 @@ impl Material for Lambertian {
         *scattered = Ray::new(rec.p, scatter_direction);
         *attenuation = self.albedo;
         true
-    }
-
-    fn into_any_material(self) -> AnyMaterial {
-        AnyMaterial::Lambertian(self)
     }
 }
 
@@ -104,10 +80,6 @@ impl Material for Metal {
         *scattered = Ray::new(rec.p, reflected + self.fuzz * Vec3::random_unit_vector());
         *attenuation = self.albedo;
         scattered.direction().dot(rec.normal) > 0.
-    }
-
-    fn into_any_material(self) -> AnyMaterial {
-        AnyMaterial::Metal(self)
     }
 }
 
@@ -162,9 +134,5 @@ impl Material for Dielectric {
 
         *scattered = Ray::new(rec.p, direction);
         true
-    }
-
-    fn into_any_material(self) -> AnyMaterial {
-        AnyMaterial::Dielectric(self)
     }
 }

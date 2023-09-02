@@ -1,7 +1,7 @@
 use crate::{
-    hittable::{AnyHittable, HitRecord, Hittable},
+    hittable::{HitRecord, Hittable},
     interval::Interval,
-    material::{AnyMaterial, Material},
+    material::AnyMaterial,
     ray::Ray,
     vec3::Point3,
 };
@@ -13,11 +13,11 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, mat: impl Material) -> Self {
+    pub fn new(center: Point3, radius: f64, mat: impl Into<AnyMaterial>) -> Self {
         Self {
             center,
             radius,
-            mat: mat.into_any_material(),
+            mat: mat.into(),
         }
     }
 }
@@ -51,9 +51,5 @@ impl Hittable for Sphere {
         rec.mat = self.mat;
 
         true
-    }
-
-    fn into_any_hittable(self) -> AnyHittable {
-        AnyHittable::Sphere(self)
     }
 }

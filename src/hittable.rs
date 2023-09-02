@@ -1,34 +1,23 @@
+use enum_dispatch::enum_dispatch;
+
 use crate::{
     hittable_list::HittableList,
     interval::Interval,
-    material::AnyMaterial,
+    material::{AnyMaterial, Lambertian},
     ray::Ray,
     sphere::Sphere,
     vec3::{Point3, Vec3},
 };
 
+#[enum_dispatch]
 pub trait Hittable {
     fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
-
-    fn into_any_hittable(self) -> AnyHittable;
 }
 
+#[enum_dispatch(Hittable)]
 pub enum AnyHittable {
-    Sphere(Sphere),
-    List(HittableList),
-}
-
-impl Hittable for AnyHittable {
-    fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        match self {
-            AnyHittable::Sphere(h) => h.hit(r, ray_t, rec),
-            AnyHittable::List(h) => h.hit(r, ray_t, rec),
-        }
-    }
-
-    fn into_any_hittable(self) -> AnyHittable {
-        self
-    }
+    Sphere,
+    HittableList,
 }
 
 #[derive(Clone, Copy)]
@@ -45,7 +34,7 @@ impl HitRecord {
         Self {
             p: Point3::default(),
             normal: Vec3::default(),
-            mat: AnyMaterial::None,
+            mat: Lambertian::default().into(),
             t: 0.,
             front_face: false,
         }

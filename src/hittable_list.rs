@@ -14,8 +14,8 @@ impl HittableList {
         Self::default()
     }
 
-    pub fn add(&mut self, object: impl Hittable) {
-        self.objects.push(object.into_any_hittable());
+    pub fn add(&mut self, object: impl Into<AnyHittable>) {
+        self.objects.push(object.into());
     }
 }
 
@@ -34,9 +34,5 @@ impl Hittable for HittableList {
         }
 
         hit_anything
-    }
-
-    fn into_any_hittable(self) -> AnyHittable {
-        AnyHittable::List(self)
     }
 }
