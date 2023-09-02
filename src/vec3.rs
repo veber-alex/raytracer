@@ -1,7 +1,4 @@
-use std::{
-    fmt::Display,
-    ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub},
-};
+use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub};
 
 use crate::rtweekend::{random_double, random_double_min_max};
 
@@ -162,12 +159,6 @@ impl DivAssign<f64> for Vec3 {
 }
 
 pub type Point3 = Vec3;
-
-impl Display for Vec3 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self.e[0], self.e[1], self.e[2])
-    }
-}
 
 impl Add for Vec3 {
     type Output = Self;
