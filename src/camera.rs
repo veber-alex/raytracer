@@ -1,3 +1,5 @@
+use std::io::{stdout, BufWriter, Write};
+
 use crate::{
     color::{write_color, Color},
     hittable::{HitRecord, Hittable},
@@ -75,7 +77,13 @@ impl Camera {
     pub fn render(&mut self, world: &HittableList) {
         self.initialize();
 
-        println!("P3\n{} {}\n255", self.image_width, self.image_height);
+        let mut stdout = BufWriter::with_capacity(1024 * 1024, stdout().lock());
+
+        let _ = writeln!(
+            &mut stdout,
+            "P3\n{} {}\n255",
+            self.image_width, self.image_height
+        );
 
         for j in 0..self.image_height {
             eprint!("\rScanlines remaining: {} ", self.image_height - j);
@@ -87,7 +95,7 @@ impl Camera {
                         Self::ray_color(r, self.max_depth, world)
                     })
                     .reduce(|| Color::new(0., 0., 0.), |a, b| a + b);
-                write_color(pixel_color, self.samples_per_pixel)
+                write_color(&mut stdout, pixel_color, self.samples_per_pixel)
             }
         }
 
