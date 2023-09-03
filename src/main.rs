@@ -1,3 +1,5 @@
+#![warn(rust_2018_idioms)]
+
 use crate::{hittable_list::HittableList, sphere::Sphere, vec3::Point3};
 use camera::Camera;
 use color::Color;
