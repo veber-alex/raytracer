@@ -38,12 +38,13 @@ fn main() {
             );
 
             if (center - Point3::new(4., 0.2, 0.)).length() > 0.9 {
-                if choose_mat < 0.6 {
+                if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Color::random() * Color::random();
                     let sphere_material = Lambertian::new(albedo);
-                    world.add(Sphere::new(center, 0.2, sphere_material));
-                } else if choose_mat < 0.90 {
+                    let center2 = center + Vec3::new(0., random_double_min_max(0., 0.5), 0.);
+                    world.add(Sphere::moving(center, center2, 0.2, sphere_material));
+                } else if choose_mat < 0.95 {
                     // metal
                     let albedo = Color::random_min_max(0.5, 1.);
                     let fuzz = random_double_min_max(0., 0.5);
@@ -70,7 +71,7 @@ fn main() {
     let mut cam = Camera::new();
 
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 500;
+    cam.image_width = 400;
     cam.samples_per_pixel = 100;
     cam.max_depth = 50;
 
