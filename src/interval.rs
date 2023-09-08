@@ -11,6 +11,10 @@ impl Interval {
         Self { min, max }
     }
 
+    pub fn from_intervals(a: Interval, b: Interval) -> Self {
+        Self::new(a.min.min(b.min), a.max.max(b.max))
+    }
+
     pub fn surrounds(self, x: f64) -> bool {
         self.min < x && x < self.max
     }
@@ -28,6 +32,11 @@ impl Interval {
             x
         }
     }
+
+    // pub fn expand(self, delta: f64) -> Self {
+    //     let padding = delta / 2.;
+    //     Self::new(self.min - padding, self.max + padding)
+    // }
 }
 
 impl Default for Interval {

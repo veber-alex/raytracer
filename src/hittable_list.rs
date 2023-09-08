@@ -1,21 +1,35 @@
 use crate::{
+    aabb::Aabb,
     hittable::{AnyHittable, HitRecord, Hittable},
     interval::Interval,
     ray::Ray,
 };
 
-#[derive(Default)]
+#[derive(Clone)]
 pub struct HittableList {
-    objects: Vec<AnyHittable>,
+    pub objects: Vec<AnyHittable>,
+    bbox: Aabb,
 }
 
 impl HittableList {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            objects: vec![],
+            bbox: Aabb::default(),
+        }
+    }
+
+    pub fn from_hittable(hittable: impl Into<AnyHittable>) -> Self {
+        let mut this = Self::new();
+        this.add(hittable.into());
+
+        this
     }
 
     pub fn add(&mut self, object: impl Into<AnyHittable>) {
-        self.objects.push(object.into());
+        let object = object.into();
+        self.bbox = Aabb::from_aabs(self.bbox, object.bounding_box());
+        self.objects.push(object);
     }
 }
 
@@ -25,7 +39,7 @@ impl Hittable for HittableList {
         let mut hit_anything = false;
         let mut closest_so_far = ray_t.max;
 
-        for object in &self.objects {
+        for object in &*self.objects {
             if object.hit(r, Interval::new(ray_t.min, closest_so_far), &mut temp_rec) {
                 hit_anything = true;
                 closest_so_far = temp_rec.t;
@@ -34,5 +48,9 @@ impl Hittable for HittableList {
         }
 
         hit_anything
+    }
+
+    fn bounding_box(&self) -> Aabb {
+        self.bbox
     }
 }

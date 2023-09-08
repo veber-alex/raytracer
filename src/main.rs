@@ -1,12 +1,15 @@
 #![warn(rust_2018_idioms)]
 
 use crate::{hittable_list::HittableList, sphere::Sphere, vec3::Point3};
+use bvh::BvhNode;
 use camera::Camera;
 use color::Color;
 use material::{Dielectric, Lambertian, Metal};
 use rtweekend::{random_double, random_double_min_max};
 use vec3::Vec3;
 
+mod aabb;
+mod bvh;
 mod camera;
 mod color;
 mod hittable;
@@ -67,6 +70,8 @@ fn main() {
 
     let material3 = Metal::new(Color::new(0.5, 0.6, 0.5), 0.);
     world.add(Sphere::new(Point3::new(4.0, 1., 0.), 1., material3));
+
+    world = HittableList::from_hittable(BvhNode::from_list(world));
 
     let mut cam = Camera::new();
 

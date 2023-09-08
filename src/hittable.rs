@@ -1,6 +1,8 @@
 use enum_dispatch::enum_dispatch;
 
 use crate::{
+    aabb::Aabb,
+    bvh::BvhNode,
     hittable_list::HittableList,
     interval::Interval,
     material::{AnyMaterial, Lambertian},
@@ -12,12 +14,16 @@ use crate::{
 #[enum_dispatch]
 pub trait Hittable {
     fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+
+    fn bounding_box(&self) -> Aabb;
 }
 
 #[enum_dispatch(Hittable)]
+#[derive(Clone)]
 pub enum AnyHittable {
     Sphere,
     HittableList,
+    BvhNode,
 }
 
 #[derive(Clone, Copy)]
