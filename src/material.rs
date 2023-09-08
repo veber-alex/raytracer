@@ -1,6 +1,13 @@
 use enum_dispatch::enum_dispatch;
 
-use crate::{color::Color, hittable::HitRecord, ray::Ray, rtweekend::random_double, vec3::Vec3};
+use crate::{
+    color::Color,
+    hittable::HitRecord,
+    ray::Ray,
+    rtweekend::random_double,
+    texture::{AnyTexture, SolidColor, Texture},
+    vec3::Vec3,
+};
 
 #[enum_dispatch]
 pub trait Material {
@@ -13,22 +20,26 @@ pub trait Material {
     ) -> bool;
 }
 
-#[derive(Clone, Copy)]
 #[enum_dispatch(Material)]
+#[derive(Clone)]
 pub enum AnyMaterial {
     Lambertian,
     Metal,
     Dielectric,
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone)]
 pub struct Lambertian {
-    albedo: Color,
+    albedo: AnyTexture,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+    pub fn new(a: impl Into<AnyTexture>) -> Self {
+        Self { albedo: a.into() }
+    }
+
+    pub fn from_color(a: Color) -> Self {
+        Self::new(SolidColor::new(a))
     }
 }
 
@@ -48,7 +59,7 @@ impl Material for Lambertian {
         }
 
         *scattered = Ray::new(rec.p, scatter_direction, r_in.time());
-        *attenuation = self.albedo;
+        *attenuation = self.albedo.value(rec.u, rec.v, rec.p);
         true
     }
 }

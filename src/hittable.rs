@@ -3,6 +3,7 @@ use enum_dispatch::enum_dispatch;
 use crate::{
     aabb::Aabb,
     bvh::BvhNode,
+    color::Color,
     hittable_list::HittableList,
     interval::Interval,
     material::{AnyMaterial, Lambertian},
@@ -26,12 +27,14 @@ pub enum AnyHittable {
     BvhNode,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
     pub mat: AnyMaterial,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub front_face: bool,
 }
 
@@ -40,8 +43,10 @@ impl HitRecord {
         Self {
             p: Point3::default(),
             normal: Vec3::default(),
-            mat: Lambertian::default().into(),
+            mat: Lambertian::from_color(Color::new(0., 0., 0.)).into(),
             t: 0.,
+            u: 0.,
+            v: 0.,
             front_face: false,
         }
     }

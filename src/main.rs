@@ -6,6 +6,7 @@ use camera::Camera;
 use color::Color;
 use material::{Dielectric, Lambertian, Metal};
 use rtweekend::{random_double, random_double_min_max};
+use texture::CheckerTexture;
 use vec3::Vec3;
 
 mod aabb;
@@ -19,16 +20,18 @@ mod material;
 mod ray;
 mod rtweekend;
 mod sphere;
+mod texture;
 mod vec3;
 
-fn main() {
+fn random_spheres() {
     let mut world = HittableList::new();
 
-    let ground_material = Lambertian::new(Color::new(0.5, 0.5, 0.5));
+    let checker =
+        CheckerTexture::from_solid(0.32, Color::new(0.2, 0.3, 0.1), Color::new(0.9, 0.9, 0.9));
     world.add(Sphere::new(
         Point3::new(0., -1000., 0.),
         1000.,
-        ground_material,
+        Lambertian::new(checker),
     ));
 
     for a in -11..11 {
@@ -44,7 +47,7 @@ fn main() {
                 if choose_mat < 0.8 {
                     // diffuse
                     let albedo = Color::random() * Color::random();
-                    let sphere_material = Lambertian::new(albedo);
+                    let sphere_material = Lambertian::from_color(albedo);
                     let center2 = center + Vec3::new(0., random_double_min_max(0., 0.5), 0.);
                     world.add(Sphere::moving(center, center2, 0.2, sphere_material));
                 } else if choose_mat < 0.95 {
@@ -65,10 +68,10 @@ fn main() {
     let material1 = Dielectric::new(1.5);
     world.add(Sphere::new(Point3::new(0., 1., 0.), 1.0, material1));
 
-    let material2 = Lambertian::new(Color::new(0.4, 0.2, 0.1));
+    let material2 = Lambertian::from_color(Color::new(0.4, 0.2, 0.1));
     world.add(Sphere::new(Point3::new(-4., 1., 0.), 1., material2));
 
-    let material3 = Metal::new(Color::new(0.5, 0.6, 0.5), 0.);
+    let material3 = Metal::new(Color::new(0.7, 0.6, 0.5), 0.);
     world.add(Sphere::new(Point3::new(4.0, 1., 0.), 1., material3));
 
     world = HittableList::from_hittable(BvhNode::from_list(world));
@@ -89,4 +92,47 @@ fn main() {
     cam.focus_dist = 10.;
 
     cam.render(&world);
+}
+
+fn two_spheres() {
+    let mut world = HittableList::new();
+
+    let checker =
+        CheckerTexture::from_solid(0.8, Color::new(0.2, 0.3, 0.1), Color::new(0.9, 0.9, 0.9));
+
+    world.add(Sphere::new(
+        Point3::new(0., -10., 0.),
+        10.,
+        Lambertian::new(checker.clone()),
+    ));
+
+    world.add(Sphere::new(
+        Point3::new(0., 10., 0.),
+        10.,
+        Lambertian::new(checker),
+    ));
+
+    let mut cam = Camera::new();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 20.;
+    cam.lookfrom = Point3::new(13., 2., 3.);
+    cam.lookat = Point3::new(0., 0., 0.);
+    cam.vup = Vec3::new(0., 1., 0.);
+
+    cam.defocus_angle = 0.;
+
+    cam.render(&world);
+}
+
+fn main() {
+    match 2 {
+        1 => random_spheres(),
+        2 => two_spheres(),
+        _ => {}
+    }
 }
