@@ -2,7 +2,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 
 use crate::rtweekend::{random_double, random_double_min_max};
 
-#[derive(Default, Debug, Clone, Copy)]
+#[derive(Default, Clone, Copy)]
 pub struct Vec3 {
     e: [f64; 3],
 }

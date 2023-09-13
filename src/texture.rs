@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use enum_dispatch::enum_dispatch;
 
-use crate::{color::Color, vec3::Point3};
+use crate::{color::Color, interval::Interval, rtw_image::RtwImage, vec3::Point3};
 
 #[enum_dispatch]
 pub trait Texture {
@@ -14,6 +14,7 @@ pub trait Texture {
 pub enum AnyTexture {
     SolidColor,
     CheckerTexture,
+    ImageTexture,
 }
 
 #[derive(Clone, Copy)]
@@ -75,5 +76,38 @@ impl Texture for CheckerTexture {
         } else {
             self.odd.value(u, v, p)
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct ImageTexture {
+    image: RtwImage,
+}
+
+impl ImageTexture {
+    pub fn new(filename: &str) -> Self {
+        Self {
+            image: RtwImage::new(filename),
+        }
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f64, v: f64, _: Point3) -> Color {
+        // Clamp input texture coordinates to [0,1] x [1,0]
+        let u = Interval::new(0., 1.).clamp(u);
+        // Flip V to image coordinates
+        let v = 1.0 - Interval::new(0., 1.).clamp(v);
+
+        let i = (u * self.image.width() as f64) as i32;
+        let j = (v * self.image.height() as f64) as i32;
+        let pixel = self.image.pixel_data(i, j);
+
+        let color_scale = 1.0 / 255.0;
+        Color::new(
+            color_scale * pixel[0] as f64,
+            color_scale * pixel[1] as f64,
+            color_scale * pixel[2] as f64,
+        )
     }
 }

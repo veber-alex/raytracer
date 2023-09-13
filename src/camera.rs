@@ -13,7 +13,7 @@ use crate::{
 
 use rayon::prelude::*;
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Camera {
     // Ratio of image width over height
     pub aspect_ratio: f64,
@@ -115,7 +115,7 @@ impl Camera {
         let theta = degrees_to_radians(self.vfov);
         let h = (theta / 2.).tan();
         let viewport_height = 2.0 * h * self.focus_dist;
-        let viewport_width = viewport_height * self.image_width as f64 / self.image_height as f64;
+        let viewport_width = viewport_height * (self.image_width as f64 / self.image_height as f64);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
         self.w = (self.lookfrom - self.lookat).unit_vector();

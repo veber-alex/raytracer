@@ -1,6 +1,6 @@
 use crate::rtweekend::INFINITY;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Interval {
     pub min: f64,
     pub max: f64,

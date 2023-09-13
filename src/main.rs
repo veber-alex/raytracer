@@ -6,7 +6,7 @@ use camera::Camera;
 use color::Color;
 use material::{Dielectric, Lambertian, Metal};
 use rtweekend::{random_double, random_double_min_max};
-use texture::CheckerTexture;
+use texture::{CheckerTexture, ImageTexture};
 use vec3::Vec3;
 
 mod aabb;
@@ -18,6 +18,7 @@ mod hittable_list;
 mod interval;
 mod material;
 mod ray;
+mod rtw_image;
 mod rtweekend;
 mod sphere;
 mod texture;
@@ -129,10 +130,34 @@ fn two_spheres() {
     cam.render(&world);
 }
 
+fn earth() {
+    let earth_texture =
+        ImageTexture::new(concat!(env!("CARGO_MANIFEST_DIR"), "/images/earthmap.jpg",));
+    let earth_surface = Lambertian::new(earth_texture);
+    let globe = Sphere::new(Point3::new(0., 0., 0.), 2., earth_surface);
+
+    let mut cam = Camera::new();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+
+    cam.vfov = 20.;
+    cam.lookfrom = Point3::new(0., 0., 12.);
+    cam.lookat = Point3::new(0., 0., 0.);
+    cam.vup = Vec3::new(0., 1., 0.);
+
+    cam.defocus_angle = 0.;
+
+    cam.render(&HittableList::from_hittable(globe))
+}
+
 fn main() {
-    match 2 {
+    match 3 {
         1 => random_spheres(),
         2 => two_spheres(),
+        3 => earth(),
         _ => {}
     }
 }
