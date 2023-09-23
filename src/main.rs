@@ -132,7 +132,7 @@ fn two_spheres() {
 
 fn earth() {
     let earth_texture =
-        ImageTexture::new(concat!(env!("CARGO_MANIFEST_DIR"), "/images/earthmap.jpg",));
+        ImageTexture::new(concat!(env!("CARGO_MANIFEST_DIR"), "/images/earthmap.jpg"));
     let earth_surface = Lambertian::new(earth_texture);
     let globe = Sphere::new(Point3::new(0., 0., 0.), 2., earth_surface);
 

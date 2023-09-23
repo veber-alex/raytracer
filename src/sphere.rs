@@ -15,6 +15,7 @@ pub struct Sphere {
     mat: AnyMaterial,
     center_vec: Vec3,
     bbox: Aabb,
+    is_moving: bool,
 }
 
 impl Sphere {
@@ -28,6 +29,7 @@ impl Sphere {
             mat: mat.into(),
             center_vec: Vec3::default(),
             bbox,
+            is_moving: false,
         }
     }
 
@@ -48,10 +50,11 @@ impl Sphere {
             mat: mat.into(),
             center_vec: center2 - center1,
             bbox,
+            is_moving: true,
         }
     }
 
-    pub fn center(&self, time: f64) -> Point3 {
+    pub fn sphere_center(&self, time: f64) -> Point3 {
         self.center1 + time * self.center_vec
     }
 
@@ -75,7 +78,11 @@ impl Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool {
-        let center = self.center(r.time());
+        let center = if self.is_moving {
+            self.sphere_center(r.time())
+        } else {
+            self.center1
+        };
         let oc = r.origin() - center;
         let a = r.direction().length_squared();
         let half_b = oc.dot(r.direction());
