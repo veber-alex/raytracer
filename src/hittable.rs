@@ -3,10 +3,9 @@ use enum_dispatch::enum_dispatch;
 use crate::{
     aabb::Aabb,
     bvh::BvhNode,
-    color::Color,
     hittable_list::HittableList,
     interval::Interval,
-    material::{AnyMaterial, Lambertian},
+    material::AnyMaterial,
     ray::Ray,
     sphere::Sphere,
     vec3::{Point3, Vec3},
@@ -14,7 +13,7 @@ use crate::{
 
 #[enum_dispatch]
 pub trait Hittable {
-    fn hit(&self, r: Ray, ray_t: Interval, rec: &mut HitRecord) -> bool;
+    fn hit(&self, r: Ray, ray_t: Interval) -> Option<HitRecord>;
 
     fn bounding_box(&self) -> Aabb;
 }
@@ -39,26 +38,30 @@ pub struct HitRecord {
 }
 
 impl HitRecord {
-    pub fn new() -> Self {
-        Self {
-            p: Point3::default(),
-            normal: Vec3::default(),
-            mat: Lambertian::from_color(Color::new(0., 0., 0.)).into(),
-            t: 0.,
-            u: 0.,
-            v: 0.,
-            front_face: false,
-        }
-    }
-
-    pub fn set_face_normal(&mut self, r: Ray, outward_normal: Vec3) {
-        // Sets the hit record normal vector.
-        // NOTE: the parameter `outward_normal` is assumed to have unit length.
-        self.front_face = r.direction().dot(outward_normal) < 0.;
-        self.normal = if self.front_face {
+    pub fn new(
+        r: Ray,
+        p: Point3,
+        outward_normal: Vec3,
+        mat: AnyMaterial,
+        t: f64,
+        u: f64,
+        v: f64,
+    ) -> Self {
+        let front_face = r.direction().dot(outward_normal) < 0.;
+        let normal = if front_face {
             outward_normal
         } else {
             -outward_normal
         };
+
+        Self {
+            p,
+            normal,
+            mat,
+            t,
+            u,
+            v,
+            front_face,
+        }
     }
 }

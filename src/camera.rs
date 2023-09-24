@@ -1,6 +1,6 @@
 use crate::{
     color::{write_color, Color},
-    hittable::{HitRecord, Hittable},
+    hittable::Hittable,
     hittable_list::HittableList,
     interval::Interval,
     material::Material,
@@ -184,9 +184,7 @@ impl Camera {
             return Color::new(0., 0., 0.);
         }
 
-        let mut rec = HitRecord::new();
-
-        if world.hit(r, Interval::new(0.001, INFINITY), &mut rec) {
+        if let Some(rec) = world.hit(r, Interval::new(0.001, INFINITY)) {
             let mut scattered = Ray::default();
             let mut attenuation = Color::default();
             if rec.mat.scatter(r, &rec, &mut attenuation, &mut scattered) {
