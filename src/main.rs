@@ -154,7 +154,7 @@ fn earth() {
 }
 
 fn main() {
-    match 3 {
+    match 1 {
         1 => random_spheres(),
         2 => two_spheres(),
         3 => earth(),

@@ -1,5 +1,3 @@
-use std::io::{stdout, BufWriter, Write};
-
 use crate::{
     color::{write_color, Color},
     hittable::{HitRecord, Hittable},
@@ -10,6 +8,8 @@ use crate::{
     rtweekend::{degrees_to_radians, random_double, INFINITY},
     vec3::{Point3, Vec3},
 };
+use std::io::stdout;
+use std::{fmt::Write as _, io::Write as _};
 
 use rayon::prelude::*;
 
@@ -77,29 +77,32 @@ impl Camera {
     pub fn render(&mut self, world: &HittableList) {
         self.initialize();
 
-        let mut stdout = BufWriter::with_capacity(1024 * 1024, stdout().lock());
+        let mut buf = String::new();
 
         let _ = writeln!(
-            &mut stdout,
+            &mut buf,
             "P3\n{} {}\n255",
             self.image_width, self.image_height
         );
 
-        for j in 0..self.image_height {
-            eprint!("\rScanlines remaining: {} ", self.image_height - j);
-            for i in 0..self.image_width {
-                let pixel_color = (0..self.samples_per_pixel)
-                    .into_par_iter()
+        let pixels: Vec<_> = (0..self.image_height)
+            .into_par_iter()
+            .flat_map(|j| rayon::iter::repeat(j).zip(0..self.image_width))
+            .map(|(j, i)| {
+                (0..self.samples_per_pixel)
                     .map(|_| {
                         let r = self.get_ray(i, j);
                         Self::ray_color(r, self.max_depth, world)
                     })
-                    .reduce(|| Color::new(0., 0., 0.), |a, b| a + b);
-                write_color(&mut stdout, pixel_color, self.samples_per_pixel)
-            }
+                    .fold(Color::new(0., 0., 0.), |a, b| a + b)
+            })
+            .collect();
+
+        for pixel_color in pixels {
+            write_color(&mut buf, pixel_color, self.samples_per_pixel)
         }
 
-        eprintln!("\rDone.                 ")
+        stdout().lock().write_all(buf.as_bytes()).unwrap();
     }
 
     fn initialize(&mut self) {
