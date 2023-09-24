@@ -77,7 +77,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: Ray, ray_t: Interval) -> Option<HitRecord> {
+    fn hit(&self, r: Ray, ray_t: Interval) -> Option<HitRecord<'_>> {
         let center = if self.is_moving {
             self.sphere_center(r.time())
         } else {
@@ -106,7 +106,7 @@ impl Hittable for Sphere {
         let p = r.at(root);
         let outward_normal = (p - center) / self.radius;
         let (u, v) = self.get_sphere_uv(outward_normal);
-        let record = HitRecord::new(r, p, outward_normal, self.mat.clone(), root, u, v);
+        let record = HitRecord::new(r, p, outward_normal, &self.mat, root, u, v);
 
         Some(record)
     }

@@ -13,7 +13,7 @@ use crate::{
 
 #[enum_dispatch]
 pub trait Hittable {
-    fn hit(&self, r: Ray, ray_t: Interval) -> Option<HitRecord>;
+    fn hit(&self, r: Ray, ray_t: Interval) -> Option<HitRecord<'_>>;
 
     fn bounding_box(&self) -> Aabb;
 }
@@ -27,22 +27,22 @@ pub enum AnyHittable {
 }
 
 #[derive(Clone)]
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub p: Point3,
     pub normal: Vec3,
-    pub mat: AnyMaterial,
+    pub mat: &'a AnyMaterial,
     pub t: f64,
     pub u: f64,
     pub v: f64,
     pub front_face: bool,
 }
 
-impl HitRecord {
+impl<'a> HitRecord<'a> {
     pub fn new(
         r: Ray,
         p: Point3,
         outward_normal: Vec3,
-        mat: AnyMaterial,
+        mat: &'a AnyMaterial,
         t: f64,
         u: f64,
         v: f64,

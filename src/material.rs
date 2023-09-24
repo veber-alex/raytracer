@@ -14,7 +14,7 @@ pub trait Material {
     fn scatter(
         &self,
         r_in: Ray,
-        rec: &HitRecord,
+        rec: &HitRecord<'_>,
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool;
@@ -47,7 +47,7 @@ impl Material for Lambertian {
     fn scatter(
         &self,
         r_in: Ray,
-        rec: &HitRecord,
+        rec: &HitRecord<'_>,
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool {
@@ -83,7 +83,7 @@ impl Material for Metal {
     fn scatter(
         &self,
         r_in: Ray,
-        rec: &HitRecord,
+        rec: &HitRecord<'_>,
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool {
@@ -123,7 +123,7 @@ impl Material for Dielectric {
     fn scatter(
         &self,
         r_in: Ray,
-        rec: &HitRecord,
+        rec: &HitRecord<'_>,
         attenuation: &mut Color,
         scattered: &mut Ray,
     ) -> bool {
