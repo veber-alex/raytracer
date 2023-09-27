@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{process, sync::Arc};
 
 use image::io::Reader as ImageReader;
 
@@ -6,7 +6,7 @@ const BYTES_PER_PIXEL: i32 = 3;
 
 #[derive(Clone)]
 pub struct RtwImage {
-    data: Option<Arc<[u8]>>,
+    data: Arc<[u8]>,
     image_width: i32,
     image_height: i32,
     bytes_per_scanline: i32,
@@ -24,9 +24,10 @@ impl RtwImage {
             Some(image.into_vec().into())
         })();
 
-        if data.is_none() {
-            eprintln!("ERROR: Could not load image file {filename}.")
-        }
+        let Some(data) = data else {
+            eprintln!("ERROR: Could not load image file {filename}.");
+            process::exit(1)
+        };
 
         Self {
             data,
@@ -46,16 +47,12 @@ impl RtwImage {
 
     pub fn pixel_data(&self, x: i32, y: i32) -> [u8; 3] {
         // Return the address of the three bytes of the pixel at x,y (or magenta if no data).
-        if let Some(data) = &self.data {
-            let x = Self::clamp(x, 0, self.image_width);
-            let y = Self::clamp(y, 0, self.image_height);
+        let x = Self::clamp(x, 0, self.image_width);
+        let y = Self::clamp(y, 0, self.image_height);
 
-            data[(y * self.bytes_per_scanline + x * BYTES_PER_PIXEL) as usize..][..3]
-                .try_into()
-                .unwrap()
-        } else {
-            [255, 0, 255]
-        }
+        self.data[(y * self.bytes_per_scanline + x * BYTES_PER_PIXEL) as usize..][..3]
+            .try_into()
+            .unwrap()
     }
 
     fn clamp(x: i32, low: i32, high: i32) -> i32 {
