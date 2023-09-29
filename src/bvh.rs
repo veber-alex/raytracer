@@ -17,12 +17,12 @@ pub struct BvhNode {
 }
 
 impl BvhNode {
-    pub fn new(mut objects: Vec<AnyHittable>, start: usize, end: usize) -> Self {
+    pub fn new(objects: &mut [AnyHittable], start: usize, end: usize) -> Self {
         let axis = random_int_min_max(0, 2);
-        let comparator = match axis {
-            0 => box_x_compare,
-            1 => box_y_compare,
-            _ => box_z_compare,
+        let comparator: fn(&_, &_) -> _ = match axis {
+            0 => |a, b| box_compare(a, b, 0),
+            1 => |a, b| box_compare(a, b, 1),
+            _ => |a, b| box_compare(a, b, 2),
         };
 
         let object_span = end - start;
@@ -30,23 +30,17 @@ impl BvhNode {
         let (left, right) = match object_span {
             1 => (objects[start].clone(), objects[start].clone()),
             2 => {
-                if comparator(&objects[start], &objects[start + 1]) {
+                if comparator(&objects[start], &objects[start + 1]).is_lt() {
                     (objects[start].clone(), objects[start + 1].clone())
                 } else {
                     (objects[start + 1].clone(), objects[start].clone())
                 }
             }
             _ => {
-                objects[start..end].sort_unstable_by(|a, b| {
-                    if comparator(a, b) {
-                        Ordering::Less
-                    } else {
-                        Ordering::Greater
-                    }
-                });
+                objects[start..end].sort_unstable_by(comparator);
 
                 let mid = start + object_span / 2;
-                let left = Self::new(objects.clone(), start, mid);
+                let left = Self::new(objects, start, mid);
                 let right = Self::new(objects, mid, end);
 
                 (left.into(), right.into())
@@ -60,9 +54,9 @@ impl BvhNode {
         }
     }
 
-    pub fn from_list(list: HittableList) -> Self {
+    pub fn from_list(mut list: HittableList) -> Self {
         let len = list.objects.len();
-        Self::new(list.objects, 0, len)
+        Self::new(&mut list.objects, 0, len)
     }
 }
 
@@ -89,18 +83,10 @@ impl Hittable for BvhNode {
     }
 }
 
-fn box_compare(a: &AnyHittable, b: &AnyHittable, axis_index: i32) -> bool {
-    a.bounding_box().axis(axis_index).min < b.bounding_box().axis(axis_index).min
-}
-
-fn box_x_compare(a: &AnyHittable, b: &AnyHittable) -> bool {
-    box_compare(a, b, 0)
-}
-
-fn box_y_compare(a: &AnyHittable, b: &AnyHittable) -> bool {
-    box_compare(a, b, 1)
-}
-
-fn box_z_compare(a: &AnyHittable, b: &AnyHittable) -> bool {
-    box_compare(a, b, 2)
+fn box_compare(a: &AnyHittable, b: &AnyHittable, axis_index: i32) -> Ordering {
+    if a.bounding_box().axis(axis_index).min < b.bounding_box().axis(axis_index).min {
+        Ordering::Less
+    } else {
+        Ordering::Greater
+    }
 }
